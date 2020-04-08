@@ -37,17 +37,20 @@ class ProviderImplementationChooser(ipw.VBox):
             providers.insert(1, ("Local server", local_provider))
         implementations = [(self.NO_OPTIONS, None)]
 
-        self.providers = ipw.Dropdown(options=providers)
-        self.child_dbs = ipw.Dropdown(options=implementations, disabled=True)
+        self.providers = ipw.Dropdown(
+            options=providers,
+            )
+        self.child_dbs = ipw.Dropdown(
+            options=implementations,
+            disabled=True,
+            )
 
         self.providers.observe(self._observe_providers, names="index")
         self.child_dbs.observe(self._observe_child_dbs, names="index")
 
         super().__init__(
             children=[self.providers, self.child_dbs],
-            layout=ipw.Layout(width="auto"),
-            **kwargs,
-        )
+            layout=ipw.Layout(min_width="24em"), **kwargs)
 
     def _observe_providers(self, change):
         """Update child database dropdown upon changing provider"""
@@ -97,7 +100,7 @@ class ProviderImplementationChooser(ipw.VBox):
             self.child_dbs.disabled = True
 
 
-class ProviderImplementationSummary(ipw.GridspecLayout):
+class ProviderImplementationSummary(ipw.HBox):
     """Summary/description of chosen provider and their database"""
 
     provider = traitlets.Dict(allow_none=True)
@@ -105,22 +108,24 @@ class ProviderImplementationSummary(ipw.GridspecLayout):
 
     def __init__(self, **kwargs):
         self.provider_summary = ipw.HTML()
+
         provider_section = ipw.VBox(
             children=[self.provider_summary],
-            layout=ipw.Layout(width="auto", height="auto"),
+            layout=ipw.Layout(
+                max_width='48%', width="auto", height="auto", flex="1 1 auto"),
         )
 
         self.database_summary = ipw.HTML()
         database_section = ipw.VBox(
             children=[self.database_summary],
-            layout=ipw.Layout(width="auto", height="auto"),
+            layout=ipw.Layout(
+                max_width='48%', width="auto", height="auto", flex="1 1 auto"),
         )
 
         super().__init__(
-            n_rows=1, n_columns=31, layout={"border": "solid 0.5px"}, **kwargs
-        )
-        self[:, :15] = provider_section
-        self[:, 16:] = database_section
+            children=[provider_section, database_section],
+            layout=ipw.Layout(flex="1 1 auto"),
+            **kwargs)
 
         self.observe(self._on_provider_change, names="provider")
         self.observe(self._on_database_change, names="database")
@@ -165,7 +170,7 @@ class ProviderImplementationSummary(ipw.GridspecLayout):
         self.provider = None
 
 
-class ProvidersImplementations(ipw.GridspecLayout):
+class ProvidersImplementations(ipw.HBox):
     """Combining chooser and summary widgets"""
 
     database = traitlets.Tuple(traitlets.Unicode(), traitlets.Dict(allow_none=True))
@@ -182,12 +187,12 @@ class ProvidersImplementations(ipw.GridspecLayout):
             self.sections.append(self.summary)
 
         if self.summary_included:
-            super().__init__(n_rows=2, n_columns=31, **kwargs)
-            self[:, :10] = self.chooser
-            self[:, 11:] = self.summary
+            super().__init__(
+                children=[self.chooser, self.summary],
+                **kwargs
+                )
         else:
-            super().__init__(n_rows=1, n_columns=1, **kwargs)
-            self[:, :] = self.chooser
+            super().__init__(children=[self.chooser], **kwargs)
 
         self.chooser.observe(self._update_database, names="database")
         if self.summary_included:
