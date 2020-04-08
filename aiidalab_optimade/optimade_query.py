@@ -35,6 +35,8 @@ class OptimadeQueryWidget(ipw.VBox):  # pylint: disable=too-many-instance-attrib
     )
     database = traitlets.Tuple(traitlets.Unicode(), traitlets.Dict(allow_none=True))
 
+    disabled = traitlets.Bool()
+
     def __init__(
         self,
         debug: bool = False,
@@ -164,6 +166,13 @@ class OptimadeQueryWidget(ipw.VBox):  # pylint: disable=too-many-instance-attrib
         self.base_url.unfreeze()
         self.structure_drop.unfreeze()
         self.structure_page_chooser.unfreeze()
+
+    @traitlets.observe('disabled')
+    def _observe_disabled(self, change):
+        if change['new']:
+            self.freeze()
+        else:
+            self.unfreeze()
 
     def reset(self):
         """Reset widget"""
